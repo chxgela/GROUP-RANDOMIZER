@@ -1,4 +1,3 @@
-
 (() => {
   const {
     supabase,
@@ -20,61 +19,94 @@
   const equalArea = document.getElementById("equal-size-area");
   const customArea = document.getElementById("custom-size-area");
 
-  const groupCountInput = document.getElementById("group-count");
-  const totalStudentsInput = document.getElementById("total-students");
-  const memberInput = document.getElementById("members-per-group");
-  const customGroups = document.getElementById("custom-groups");
+  const groupCountInput =
+    document.getElementById("group-count");
+
+  const totalStudentsInput =
+    document.getElementById("total-students");
+
+  const memberInput =
+    document.getElementById("members-per-group");
+
+  const customGroups =
+    document.getElementById("custom-groups");
+
+  /* =========================
+     HELPERS
+  ========================= */
 
   function errText(error) {
-    return error?.message || "Something went wrong. Please try again.";
+    return (
+      error?.message ||
+      "Something went wrong. Please try again."
+    );
   }
 
   function escapeHtml(value) {
     return String(value).replace(
       /[&<>"']/g,
-      c => ({
+      character => ({
         "&": "&amp;",
         "<": "&lt;",
         ">": "&gt;",
         '"': "&quot;",
         "'": "&#39;"
-      }[c])
+      }[character])
     );
   }
 
   /* =========================
-     CUSTOM GROUP CAPACITIES
+     CUSTOM GROUP INPUTS
   ========================= */
 
   function buildCustomInputs() {
     const count = Math.max(
       1,
-      Math.min(100, Number(groupCountInput.value) || 1)
+      Math.min(
+        100,
+        Number(groupCountInput.value) || 1
+      )
     );
 
-    const old = [...customGroups.querySelectorAll("input")]
-      .map(input => input.value);
+    const oldValues = [
+      ...customGroups.querySelectorAll("input")
+    ].map(input => input.value);
 
     customGroups.innerHTML = "";
 
     for (let i = 1; i <= count; i++) {
-      const wrap = document.createElement("div");
-      wrap.className = "capacity-item";
+      const wrapper =
+        document.createElement("div");
 
-      const label = document.createElement("label");
+      wrapper.className = "capacity-item";
+
+      const label =
+        document.createElement("label");
+
       label.textContent = `Group ${i}`;
 
-      const input = document.createElement("input");
+      const input =
+        document.createElement("input");
+
       input.type = "number";
       input.min = "1";
       input.max = "1000";
-      input.value = old[i - 1] || memberInput.value || "5";
+
+      input.value =
+        oldValues[i - 1] ||
+        memberInput.value ||
+        "5";
+
       input.dataset.group = i;
 
-      input.addEventListener("input", updatePreview);
+      input.addEventListener(
+        "input",
+        updatePreview
+      );
 
-      wrap.append(label, input);
-      customGroups.appendChild(wrap);
+      wrapper.append(label, input);
+
+      customGroups.appendChild(wrapper);
     }
 
     updatePreview();
@@ -82,12 +114,16 @@
 
   function capacitiesFromForm() {
     if (customSizes.checked) {
-      return [...customGroups.querySelectorAll("input")]
-        .map(input => Number(input.value));
+      return [
+        ...customGroups.querySelectorAll("input")
+      ].map(input => Number(input.value));
     }
 
-    const total = Number(totalStudentsInput.value);
-    const count = Number(groupCountInput.value);
+    const total =
+      Number(totalStudentsInput.value);
+
+    const count =
+      Number(groupCountInput.value);
 
     if (
       !Number.isInteger(total) ||
@@ -97,107 +133,181 @@
       return [];
     }
 
-    const base = Math.floor(total / count);
-    const remainder = total % count;
+    const base =
+      Math.floor(total / count);
+
+    const remainder =
+      total % count;
 
     return Array.from(
       { length: count },
-      (_, i) => base + (i < remainder ? 1 : 0)
+      (_, index) =>
+        base +
+        (index < remainder ? 1 : 0)
     );
   }
 
   function updatePreview() {
-    const caps = capacitiesFromForm();
-    const sum = caps.reduce((a, b) => a + b, 0);
-    const total = Number(totalStudentsInput.value);
+    const capacities =
+      capacitiesFromForm();
 
-    const text = caps.length
+    const sum =
+      capacities.reduce(
+        (a, b) => a + b,
+        0
+      );
+
+    const total =
+      Number(totalStudentsInput.value);
+
+    const text = capacities.length
       ? `Capacity: ${sum} slots${
           sum === total
             ? " ✓ matches total students"
-            : ` • ${sum - total} difference from total students`
+            : ` • ${
+                sum - total
+              } difference from total students`
         }`
       : "";
 
-    document.getElementById(
-      customSizes.checked
-        ? "custom-capacity-preview"
-        : "capacity-preview"
-    ).textContent = text;
+    const preview =
+      document.getElementById(
+        customSizes.checked
+          ? "custom-capacity-preview"
+          : "capacity-preview"
+      );
+
+    if (preview) {
+      preview.textContent = text;
+    }
   }
 
-  customSizes.addEventListener("change", () => {
-    equalArea.classList.toggle("hidden", customSizes.checked);
-    customArea.classList.toggle("hidden", !customSizes.checked);
+  /* =========================
+     FORM EVENTS
+  ========================= */
 
-    if (customSizes.checked) {
-      buildCustomInputs();
+  customSizes.addEventListener(
+    "change",
+    () => {
+      equalArea.classList.toggle(
+        "hidden",
+        customSizes.checked
+      );
+
+      customArea.classList.toggle(
+        "hidden",
+        !customSizes.checked
+      );
+
+      if (customSizes.checked) {
+        buildCustomInputs();
+      }
+
+      updatePreview();
     }
+  );
 
-    updatePreview();
-  });
+  groupCountInput.addEventListener(
+    "input",
+    () => {
+      if (customSizes.checked) {
+        buildCustomInputs();
+      }
 
-  groupCountInput.addEventListener("input", () => {
-    if (customSizes.checked) {
-      buildCustomInputs();
+      updatePreview();
     }
+  );
 
-    updatePreview();
-  });
+  totalStudentsInput.addEventListener(
+    "input",
+    updatePreview
+  );
 
-  totalStudentsInput.addEventListener("input", updatePreview);
-  memberInput.addEventListener("input", updatePreview);
+  memberInput.addEventListener(
+    "input",
+    updatePreview
+  );
 
   /* =========================
      LOAD SESSIONS
   ========================= */
 
   async function loadSessions() {
-    const { data, error } = await supabase
+    const {
+      data,
+      error
+    } = await supabase
       .from("sessions")
       .select(
         "id, subject, class_section, total_students, status, created_at"
       )
-      .order("created_at", { ascending: false });
+      .order(
+        "created_at",
+        { ascending: false }
+      );
 
     if (error) {
       throw error;
     }
 
-    sessionList.innerHTML = data?.length
-      ? data
-          .map(
-            s => `
-              <div
-                class="session-item ${
-                  s.id === currentSessionId ? "active" : ""
-                }"
-                data-id="${s.id}"
-              >
-                <div class="session-item-title">
-                  ${escapeHtml(s.subject)} —
-                  ${escapeHtml(s.class_section)}
-                </div>
+    sessionList.innerHTML =
+      data?.length
+        ? data
+            .map(
+              session => `
+                <div
+                  class="session-item ${
+                    session.id ===
+                    currentSessionId
+                      ? "active"
+                      : ""
+                  }"
+                  data-id="${session.id}"
+                >
 
-                <div class="session-item-meta">
-                  ${s.total_students} students
-                </div>
+                  <div class="session-item-title">
+                    ${escapeHtml(
+                      session.subject
+                    )}
+                    —
+                    ${escapeHtml(
+                      session.class_section
+                    )}
+                  </div>
 
-                <div class="session-item-status">
-                  ${escapeHtml(s.status)}
+                  <div class="session-item-meta">
+                    ${session.total_students}
+                    students
+                  </div>
+
+                  <div class="session-item-status">
+                    ${escapeHtml(
+                      session.status
+                    )}
+                  </div>
+
                 </div>
-              </div>
-            `
-          )
-          .join("")
-      : `<p class="muted">No sessions yet.</p>`;
+              `
+            )
+            .join("")
+        : `
+            <p class="muted">
+              No sessions yet.
+            </p>
+          `;
 
     sessionList
-      .querySelectorAll(".session-item")
-      .forEach(el => {
-        el.addEventListener("click", () => {
-          openSession(el.dataset.id);
-        });
+      .querySelectorAll(
+        ".session-item"
+      )
+      .forEach(element => {
+        element.addEventListener(
+          "click",
+          () =>
+            openSession(
+              element.dataset.id
+            )
+        );
       });
   }
 
@@ -210,19 +320,26 @@
 
     clearError("create-error");
 
-    const subject = document
-      .getElementById("subject")
-      .value
-      .trim();
+    const subject =
+      document
+        .getElementById("subject")
+        .value
+        .trim();
 
-    const section = document
-      .getElementById("section")
-      .value
-      .trim();
+    const section =
+      document
+        .getElementById("section")
+        .value
+        .trim();
 
-    const total = Number(totalStudentsInput.value);
-    const count = Number(groupCountInput.value);
-    const capacities = capacitiesFromForm();
+    const total =
+      Number(totalStudentsInput.value);
+
+    const count =
+      Number(groupCountInput.value);
+
+    const capacities =
+      capacitiesFromForm();
 
     if (!subject || !section) {
       return showError(
@@ -234,7 +351,9 @@
     if (
       !capacities.length ||
       capacities.some(
-        x => !Number.isInteger(x) || x < 1
+        value =>
+          !Number.isInteger(value) ||
+          value < 1
       )
     ) {
       return showError(
@@ -244,7 +363,10 @@
     }
 
     if (
-      capacities.reduce((a, b) => a + b, 0) !== total
+      capacities.reduce(
+        (a, b) => a + b,
+        0
+      ) !== total
     ) {
       return showError(
         "create-error",
@@ -252,15 +374,19 @@
       );
     }
 
-    const button = document.getElementById(
-      "create-session-button"
-    );
+    const button =
+      document.getElementById(
+        "create-session-button"
+      );
 
     button.disabled = true;
     button.textContent = "Creating…";
 
     try {
-      const { data, error } = await supabase.rpc(
+      const {
+        data,
+        error
+      } = await supabase.rpc(
         "create_grouping_session",
         {
           p_subject: subject,
@@ -282,15 +408,27 @@
       event.target.reset();
 
       customSizes.checked = false;
-      equalArea.classList.remove("hidden");
-      customArea.classList.add("hidden");
+
+      equalArea.classList.remove(
+        "hidden"
+      );
+
+      customArea.classList.add(
+        "hidden"
+      );
 
       buildCustomInputs();
+
     } catch (error) {
-      showError("create-error", errText(error));
+      showError(
+        "create-error",
+        errText(error)
+      );
+
     } finally {
       button.disabled = false;
-      button.textContent = "Create Session";
+      button.textContent =
+        "Create Session";
     }
   }
 
@@ -313,31 +451,44 @@
       .single();
 
     if (error) {
-      showError("manage-error", errText(error));
+      showError(
+        "manage-error",
+        errText(error)
+      );
       return;
     }
 
-    document.getElementById("manage-title").textContent =
+    document.getElementById(
+      "manage-title"
+    ).textContent =
       `${session.subject} — ${session.class_section}`;
 
-    document.getElementById("manage-meta").textContent =
+    document.getElementById(
+      "manage-meta"
+    ).textContent =
       `${session.total_students} students • ${session.status}`;
 
     document
-      .getElementById("start-session")
+      .getElementById(
+        "start-session"
+      )
       .classList.toggle(
         "hidden",
         session.status !== "draft"
       );
 
     document
-      .getElementById("end-session")
+      .getElementById(
+        "end-session"
+      )
       .classList.toggle(
         "hidden",
         session.status === "ended"
       );
 
-    manageCard.classList.remove("hidden");
+    manageCard.classList.remove(
+      "hidden"
+    );
 
     await loadManageData();
     await loadSessions();
@@ -346,7 +497,7 @@
   }
 
   /* =========================
-     LOAD GROUPS + STUDENTS
+     LOAD GROUPS AND STUDENTS
   ========================= */
 
   async function loadManageData() {
@@ -354,26 +505,45 @@
       return;
     }
 
-    const [
-      { data: groups, error: groupsError },
-      { data: students, error: studentsError }
-    ] = await Promise.all([
-      supabase
-        .from("groups")
-        .select(
-          "id, group_number, capacity, assigned_count"
-        )
-        .eq("session_id", currentSessionId)
-        .order("group_number"),
+    /*
+      GROUPS:
+      groups.id = unique ID of the group
+      groups.group_number = visible group number
+    */
 
-      supabase
-        .from("assignments")
-        .select(
-          "student_name, group_number, assigned_at"
-        )
-        .eq("session_id", currentSessionId)
-        .order("assigned_at")
-    ]);
+    const {
+      data: groups,
+      error: groupsError
+    } = await supabase
+      .from("groups")
+      .select(
+        "id, group_number, capacity, assigned_count"
+      )
+      .eq(
+        "session_id",
+        currentSessionId
+      )
+      .order("group_number");
+
+    /*
+      ASSIGNMENTS:
+      assignments.group_id tells us
+      which group the student belongs to.
+    */
+
+    const {
+      data: students,
+      error: studentsError
+    } = await supabase
+      .from("assignments")
+      .select(
+        "student_name, group_id, assigned_at"
+      )
+      .eq(
+        "session_id",
+        currentSessionId
+      )
+      .order("assigned_at");
 
     if (groupsError) {
       throw groupsError;
@@ -383,25 +553,35 @@
       throw studentsError;
     }
 
-    const groupData = groups || [];
-    const studentData = students || [];
+    const groupData =
+      groups || [];
+
+    const studentData =
+      students || [];
 
     /* =========================
        SUMMARY
     ========================= */
 
-    const assigned = studentData.length;
+    const assigned =
+      studentData.length;
 
-    const total = groupData.reduce(
-      (sum, group) => sum + Number(group.capacity),
-      0
-    );
+    const total =
+      groupData.reduce(
+        (sum, group) =>
+          sum +
+          Number(group.capacity),
+        0
+      );
 
-    const full = groupData.filter(
-      group =>
-        Number(group.assigned_count) >=
-        Number(group.capacity)
-    ).length;
+    const full =
+      groupData.filter(
+        group =>
+          Number(
+            group.assigned_count
+          ) >=
+          Number(group.capacity)
+      ).length;
 
     document.getElementById(
       "admin-summary"
@@ -410,6 +590,7 @@
         <div class="summary-value">
           ${assigned}/${total}
         </div>
+
         <div class="summary-label">
           Students assigned
         </div>
@@ -419,6 +600,7 @@
         <div class="summary-value">
           ${groupData.length}
         </div>
+
         <div class="summary-label">
           Groups
         </div>
@@ -428,6 +610,7 @@
         <div class="summary-value">
           ${full}/${groupData.length}
         </div>
+
         <div class="summary-label">
           Groups full
         </div>
@@ -435,145 +618,205 @@
     `;
 
     /* =========================
-       GROUP LIST WITH NAMES
+       GROUP LIST
+       WITH STUDENT NAMES
     ========================= */
 
-    const groupList = document.getElementById(
-      "admin-groups"
-    );
+    const groupList =
+      document.getElementById(
+        "admin-groups"
+      );
 
-    groupList.innerHTML = groupData
-      .map(group => {
-        const capacity = Number(group.capacity);
-        const assignedCount = Number(
-          group.assigned_count
-        );
+    groupList.innerHTML =
+      groupData
+        .map(group => {
 
-        const pct =
-          capacity > 0
-            ? Math.min(
-                100,
-                Math.round(
-                  (assignedCount / capacity) * 100
-                )
-              )
-            : 0;
+          const capacity =
+            Number(group.capacity);
 
-        /* Find students belonging to this group */
-        const members = studentData.filter(
-          student =>
-            Number(student.group_number) ===
-            Number(group.group_number)
-        );
+          const assignedCount =
+            Number(
+              group.assigned_count
+            );
 
-        const memberList = members.length
-          ? `
-              <ul>
-                ${members
-                  .map(
-                    student => `
-                      <li>
-                        ${escapeHtml(
-                          student.student_name
-                        )}
-                      </li>
-                    `
+          const percentage =
+            capacity > 0
+              ? Math.min(
+                  100,
+                  Math.round(
+                    (assignedCount /
+                      capacity) *
+                      100
                   )
-                  .join("")}
-              </ul>
-            `
-          : `
-              <p class="muted small">
-                No students assigned yet.
-              </p>
-            `;
+                )
+              : 0;
 
-        return `
-          <div
-            class="group-row group-row-members ${
-              assignedCount >= capacity
-                ? "full"
-                : ""
-            }"
-          >
-            <div class="group-content">
+          /*
+            THIS IS THE IMPORTANT FIX.
 
-              <div class="group-header">
+            Instead of:
+            student.group_number
 
-                <div class="group-name">
-                  Group ${group.group_number}
+            We use:
+            student.group_id === group.id
+          */
 
-                  ${
-                    assignedCount >= capacity
-                      ? `<span class="lock">
-                          🔒 FULL
-                        </span>`
-                      : ""
-                  }
+          const members =
+            studentData.filter(
+              student =>
+                String(
+                  student.group_id
+                ) ===
+                String(group.id)
+            );
+
+          const memberList =
+            members.length
+              ? `
+                <ul>
+                  ${members
+                    .map(
+                      student => `
+                        <li>
+                          ${escapeHtml(
+                            student.student_name
+                          )}
+                        </li>
+                      `
+                    )
+                    .join("")}
+                </ul>
+              `
+              : `
+                <p class="muted small">
+                  No students assigned yet.
+                </p>
+              `;
+
+          return `
+            <div
+              class="group-row group-row-members ${
+                assignedCount >=
+                capacity
+                  ? "full"
+                  : ""
+              }"
+            >
+
+              <div class="group-content">
+
+                <div class="group-header">
+
+                  <div class="group-name">
+
+                    Group
+                    ${group.group_number}
+
+                    ${
+                      assignedCount >=
+                      capacity
+                        ? `
+                          <span class="lock">
+                            🔒 FULL
+                          </span>
+                        `
+                        : ""
+                    }
+
+                  </div>
+
+                  <div class="group-count">
+                    ${assignedCount}/${capacity}
+                  </div>
+
                 </div>
 
-                <div class="group-count">
-                  ${assignedCount}/${capacity}
+                <div class="progress">
+                  <span
+                    style="
+                      width:${percentage}%;
+                    "
+                  ></span>
                 </div>
 
-              </div>
+                <div class="group-members">
+                  ${memberList}
+                </div>
 
-              <div class="progress">
-                <span
-                  style="width:${pct}%"
-                ></span>
-              </div>
-
-              <div class="group-members">
-                ${memberList}
               </div>
 
             </div>
-          </div>
-        `;
-      })
-      .join("");
+          `;
+        })
+        .join("");
 
     /* =========================
        ASSIGNED STUDENTS TABLE
     ========================= */
 
-    document.getElementById(
-      "students-table-body"
-    ).innerHTML = studentData.length
-      ? studentData
-          .map(
-            student => `
-              <tr>
-                <td>
-                  ${escapeHtml(
-                    student.student_name
-                  )}
-                </td>
+    const tableBody =
+      document.getElementById(
+        "students-table-body"
+      );
 
-                <td>
-                  Group ${student.group_number}
-                </td>
+    tableBody.innerHTML =
+      studentData.length
+        ? studentData
+            .map(student => {
 
-                <td>
-                  ${new Date(
-                    student.assigned_at
-                  ).toLocaleString()}
-                </td>
-              </tr>
-            `
-          )
-          .join("")
-      : `
-          <tr>
-            <td
-              colspan="3"
-              class="muted"
-            >
-              No students assigned yet.
-            </td>
-          </tr>
-        `;
+              const group =
+                groupData.find(
+                  group =>
+                    String(
+                      group.id
+                    ) ===
+                    String(
+                      student.group_id
+                    )
+                );
+
+              const groupNumber =
+                group
+                  ? group.group_number
+                  : "—";
+
+              return `
+                <tr>
+
+                  <td>
+                    ${escapeHtml(
+                      student.student_name
+                    )}
+                  </td>
+
+                  <td>
+                    ${
+                      group
+                        ? `Group ${groupNumber}`
+                        : "—"
+                    }
+                  </td>
+
+                  <td>
+                    ${new Date(
+                      student.assigned_at
+                    ).toLocaleString()}
+                  </td>
+
+                </tr>
+              `;
+            })
+            .join("")
+        : `
+            <tr>
+              <td
+                colspan="3"
+                class="muted"
+              >
+                No students assigned yet.
+              </td>
+            </tr>
+          `;
   }
 
   /* =========================
@@ -581,10 +824,13 @@
   ========================= */
 
   async function startSession() {
-    const { error } = await supabase.rpc(
+    const {
+      error
+    } = await supabase.rpc(
       "set_session_status",
       {
-        p_session_id: currentSessionId,
+        p_session_id:
+          currentSessionId,
         p_status: "active"
       }
     );
@@ -596,7 +842,9 @@
       );
     }
 
-    await openSession(currentSessionId);
+    await openSession(
+      currentSessionId
+    );
   }
 
   /* =========================
@@ -604,18 +852,22 @@
   ========================= */
 
   async function resetSession() {
-    if (
-      !confirm(
+    const confirmed =
+      confirm(
         "Reset this session? All student assignments will be permanently removed and the groups will return to 0. This cannot be undone."
-      )
-    ) {
+      );
+
+    if (!confirmed) {
       return;
     }
 
-    const { error } = await supabase.rpc(
+    const {
+      error
+    } = await supabase.rpc(
       "reset_grouping_session",
       {
-        p_session_id: currentSessionId
+        p_session_id:
+          currentSessionId
       }
     );
 
@@ -626,7 +878,9 @@
       );
     }
 
-    await openSession(currentSessionId);
+    await openSession(
+      currentSessionId
+    );
   }
 
   /* =========================
@@ -634,18 +888,22 @@
   ========================= */
 
   async function endSession() {
-    if (
-      !confirm(
+    const confirmed =
+      confirm(
         "End/archive this session? Students will no longer be able to pick a group."
-      )
-    ) {
+      );
+
+    if (!confirmed) {
       return;
     }
 
-    const { error } = await supabase.rpc(
+    const {
+      error
+    } = await supabase.rpc(
       "set_session_status",
       {
-        p_session_id: currentSessionId,
+        p_session_id:
+          currentSessionId,
         p_status: "ended"
       }
     );
@@ -657,16 +915,20 @@
       );
     }
 
-    await openSession(currentSessionId);
+    await openSession(
+      currentSessionId
+    );
   }
 
   /* =========================
-     REALTIME
+     REALTIME SUBSCRIPTION
   ========================= */
 
   function subscribeSession() {
     if (channel) {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(
+        channel
+      );
     }
 
     channel = supabase
@@ -680,9 +942,12 @@
           event: "*",
           schema: "public",
           table: "groups",
-          filter: `session_id=eq.${currentSessionId}`
+          filter:
+            `session_id=eq.${currentSessionId}`
         },
-        () => loadManageData()
+        () => {
+          loadManageData();
+        }
       )
 
       .on(
@@ -691,9 +956,12 @@
           event: "*",
           schema: "public",
           table: "assignments",
-          filter: `session_id=eq.${currentSessionId}`
+          filter:
+            `session_id=eq.${currentSessionId}`
         },
-        () => loadManageData()
+        () => {
+          loadManageData();
+        }
       )
 
       .on(
@@ -702,9 +970,14 @@
           event: "*",
           schema: "public",
           table: "sessions",
-          filter: `id=eq.${currentSessionId}`
+          filter:
+            `id=eq.${currentSessionId}`
         },
-        () => openSession(currentSessionId)
+        () => {
+          openSession(
+            currentSessionId
+          );
+        }
       )
 
       .subscribe();
@@ -716,8 +989,11 @@
 
   async function initAuth() {
     const {
-      data: { session }
-    } = await supabase.auth.getSession();
+      data: {
+        session
+      }
+    } =
+      await supabase.auth.getSession();
 
     if (session) {
       showAdmin(session);
@@ -739,20 +1015,26 @@
 
     clearError("login-error");
 
-    const email = document
-      .getElementById("login-email")
-      .value
-      .trim();
+    const email =
+      document
+        .getElementById("login-email")
+        .value
+        .trim();
 
-    const password = document.getElementById(
-      "login-password"
-    ).value;
+    const password =
+      document.getElementById(
+        "login-password"
+      ).value;
 
-    const { error } =
-      await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+    const {
+      error
+    } =
+      await supabase.auth.signInWithPassword(
+        {
+          email,
+          password
+        }
+      );
 
     if (error) {
       showError(
@@ -763,84 +1045,158 @@
   }
 
   async function showAdmin(session) {
-    loginView.classList.add("hidden");
-    adminApp.classList.remove("hidden");
+    loginView.classList.add(
+      "hidden"
+    );
+
+    adminApp.classList.remove(
+      "hidden"
+    );
 
     document
-      .getElementById("logout-button")
+      .getElementById(
+        "logout-button"
+      )
       .classList.remove("hidden");
 
     document.getElementById(
       "admin-email"
-    ).textContent = session.user.email || "";
+    ).textContent =
+      session.user.email || "";
 
-    await loadSessions();
-    updatePreview();
+    try {
+      await loadSessions();
+      updatePreview();
+    } catch (error) {
+      console.error(
+        "Could not load sessions:",
+        error
+      );
+    }
   }
 
   function showLogin() {
-    loginView.classList.remove("hidden");
-    adminApp.classList.add("hidden");
+    loginView.classList.remove(
+      "hidden"
+    );
+
+    adminApp.classList.add(
+      "hidden"
+    );
 
     document
-      .getElementById("logout-button")
+      .getElementById(
+        "logout-button"
+      )
       .classList.add("hidden");
+
+    if (channel) {
+      supabase.removeChannel(
+        channel
+      );
+
+      channel = null;
+    }
+
+    currentSessionId = null;
   }
 
   /* =========================
-     EVENT LISTENERS
+     BUTTON EVENTS
   ========================= */
 
   document
     .getElementById("login-form")
-    .addEventListener("submit", login);
-
-  document
-    .getElementById("logout-button")
-    .addEventListener("click", () =>
-      supabase.auth.signOut()
+    .addEventListener(
+      "submit",
+      login
     );
 
   document
-    .getElementById("create-session-form")
-    .addEventListener("submit", createSession);
-
-  document
-    .getElementById("refresh-sessions")
-    .addEventListener("click", loadSessions);
-
-  document
-    .getElementById("start-session")
-    .addEventListener("click", startSession);
-
-  document
-    .getElementById("reset-session")
-    .addEventListener("click", resetSession);
-
-  document
-    .getElementById("end-session")
-    .addEventListener("click", endSession);
-
-  document
-    .getElementById("copy-student-link")
-    .addEventListener("click", async () => {
-      if (!currentSessionId) {
-        return;
+    .getElementById("logout-button")
+    .addEventListener(
+      "click",
+      () => {
+        supabase.auth.signOut();
       }
+    );
 
-      try {
-        await copy(
-          publicStudentUrl(currentSessionId)
-        );
+  document
+    .getElementById(
+      "create-session-form"
+    )
+    .addEventListener(
+      "submit",
+      createSession
+    );
 
-        alert("Student link copied.");
-      } catch {
-        showError(
-          "manage-error",
-          "Could not copy automatically. Copy the student URL from the browser address bar instead."
-        );
+  document
+    .getElementById(
+      "refresh-sessions"
+    )
+    .addEventListener(
+      "click",
+      loadSessions
+    );
+
+  document
+    .getElementById(
+      "start-session"
+    )
+    .addEventListener(
+      "click",
+      startSession
+    );
+
+  document
+    .getElementById(
+      "reset-session"
+    )
+    .addEventListener(
+      "click",
+      resetSession
+    );
+
+  document
+    .getElementById(
+      "end-session"
+    )
+    .addEventListener(
+      "click",
+      endSession
+    );
+
+  document
+    .getElementById(
+      "copy-student-link"
+    )
+    .addEventListener(
+      "click",
+      async () => {
+
+        if (!currentSessionId) {
+          return;
+        }
+
+        try {
+          await copy(
+            publicStudentUrl(
+              currentSessionId
+            )
+          );
+
+          alert(
+            "Student link copied."
+          );
+
+        } catch {
+          showError(
+            "manage-error",
+            "Could not copy automatically. Copy the student URL from the browser address bar instead."
+          );
+        }
       }
-    });
+    );
 
   /* =========================
      INITIALIZE
@@ -848,4 +1204,5 @@
 
   buildCustomInputs();
   initAuth();
+
 })();
