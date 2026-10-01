@@ -155,14 +155,40 @@
       <div class="summary-box"><div class="summary-value">${(groups||[]).length}</div><div class="summary-label">Groups</div></div>
       <div class="summary-box"><div class="summary-value">${full}/${(groups||[]).length}</div><div class="summary-label">Groups full</div></div>`;
 
-    document.getElementById("admin-groups").innerHTML = (groups || []).map(g => {
-      const pct = Math.min(100, Math.round(g.assigned_count / g.capacity * 100));
-      return `<div class="group-row ${g.assigned_count >= g.capacity ? "full" : ""}">
-        <div style="flex:1"><div class="group-name">Group ${g.group_number} ${g.assigned_count >= g.capacity ? '<span class="lock">🔒 FULL</span>' : ""}</div>
-        <div class="progress"><span style="width:${pct}%"></span></div></div>
-        <div class="group-count">${g.assigned_count}/${g.capacity}</div>
-      </div>`;
-    }).join("");
+  document.getElementById("admin-groups").innerHTML = (groups || []).map(g => {
+    const pct = Math.min(100, Math.round(g.assigned_count / g.capacity * 100));
+
+    const members = (students || [])
+      .filter(s => Number(s.group_number) === Number(g.group_number))
+      .map(s => `<li>${escapeHtml(s.student_name)}</li>`)
+      .join("");
+
+    return `
+      <div class="group-row group-row-members ${g.assigned_count >= g.capacity ? "full" : ""}">
+        <div class="group-content">
+          <div class="group-header">
+            <div class="group-name">
+              Group ${g.group_number}
+              ${g.assigned_count >= g.capacity ? '<span class="lock">🔒 FULL</span>' : ""}
+            </div>
+            <div class="group-count">${g.assigned_count}/${g.capacity}</div>
+          </div>
+
+          <div class="progress">
+            <span style="width:${pct}%"></span>
+          </div>
+
+          <div class="group-members">
+            ${
+              members
+                ? `<ul>${members}</ul>`
+                : `<p class="muted small">No students assigned yet.</p>`
+            }
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
 
     document.getElementById("students-table-body").innerHTML = (students || []).map(s =>
       `<tr><td>${escapeHtml(s.student_name)}</td><td>Group ${s.group_number}</td><td>${new Date(s.assigned_at).toLocaleString()}</td></tr>`
