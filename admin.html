@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Facilitator dashboard for Random Group Maker">
+  <title>Facilitator Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <a href="index.html" class="brand">Random Group Maker</a>
+      <div class="topbar-actions">
+        <span id="admin-email" class="small muted"></span>
+        <button id="logout-button" class="btn btn-ghost hidden" type="button">Log out</button>
+      </div>
+    </header>
+
+    <section id="login-view" class="card auth-card">
+      <div class="brand-mark">RG</div>
+      <p class="eyebrow">FACILITATOR ACCESS</p>
+      <h1>Admin Login</h1>
+      <p class="muted">Use the facilitator account created in Supabase Authentication.</p>
+      <form id="login-form">
+        <label for="login-email">Email</label>
+        <input id="login-email" type="email" autocomplete="username" required>
+        <label for="login-password">Password</label>
+        <input id="login-password" type="password" autocomplete="current-password" required>
+        <button class="btn btn-primary btn-large" type="submit">Log In</button>
+      </form>
+      <p id="login-error" class="error-text hidden"></p>
+    </section>
+
+    <section id="admin-app" class="hidden">
+      <div class="session-heading">
+        <p class="eyebrow">FACILITATOR DASHBOARD</p>
+        <h1>Grouping Sessions</h1>
+        <p class="muted">Create separate sessions for different subjects or classes.</p>
+      </div>
+
+      <div class="admin-grid">
+        <section class="card">
+          <div class="section-title">
+            <div>
+              <h2>Create New Session</h2>
+              <p class="muted">Set equal or custom group capacities.</p>
+            </div>
+          </div>
+          <form id="create-session-form">
+            <label for="subject">Subject</label>
+            <input id="subject" maxlength="120" placeholder="e.g. FBPO" required>
+
+            <label for="section">Class / Section</label>
+            <input id="section" maxlength="120" placeholder="e.g. SM 3101" required>
+
+            <div class="form-row">
+              <div>
+                <label for="total-students">Total students</label>
+                <input id="total-students" type="number" min="1" max="1000" value="36" required>
+              </div>
+              <div>
+                <label for="group-count">Number of groups</label>
+                <input id="group-count" type="number" min="1" max="100" value="7" required>
+              </div>
+            </div>
+
+            <label class="checkbox-row">
+              <input id="custom-sizes" type="checkbox">
+              Use custom group sizes
+            </label>
+
+            <div id="equal-size-area">
+              <label for="members-per-group">Members per group</label>
+              <input id="members-per-group" type="number" min="1" max="1000" value="5">
+              <p id="capacity-preview" class="small muted"></p>
+            </div>
+
+            <div id="custom-size-area" class="hidden">
+              <div id="custom-groups" class="capacity-editor"></div>
+              <p id="custom-capacity-preview" class="small muted"></p>
+            </div>
+
+            <button id="create-session-button" class="btn btn-primary btn-large" type="submit">
+              Create Session
+            </button>
+          </form>
+          <p id="create-error" class="error-text hidden"></p>
+        </section>
+
+        <section class="card">
+          <div class="section-title">
+            <div>
+              <h2>Your Sessions</h2>
+              <p class="muted">Open a session to monitor it live.</p>
+            </div>
+            <button id="refresh-sessions" class="btn btn-small btn-secondary" type="button">Refresh</button>
+          </div>
+          <div id="session-list" class="session-list">
+            <p class="muted">Loading…</p>
+          </div>
+        </section>
+      </div>
+
+      <section id="manage-card" class="card hidden">
+        <div class="manage-header">
+          <div>
+            <p class="eyebrow">CURRENT SESSION</p>
+            <h2 id="manage-title">—</h2>
+            <p id="manage-meta" class="muted">—</p>
+          </div>
+          <div class="manage-actions">
+            <button id="copy-student-link" class="btn btn-secondary" type="button">Copy Student Link</button>
+            <button id="start-session" class="btn btn-primary" type="button">Start Session</button>
+            <button id="reset-session" class="btn btn-danger" type="button">Reset</button>
+            <button id="end-session" class="btn btn-secondary" type="button">End / Archive</button>
+          </div>
+        </div>
+
+        <div id="admin-summary" class="summary-grid"></div>
+        <div id="admin-groups" class="group-list"></div>
+
+        <div class="students-table-wrap">
+          <h3>Assigned Students</h3>
+          <table>
+            <thead>
+              <tr><th>Name</th><th>Group</th><th>Assigned</th></tr>
+            </thead>
+            <tbody id="students-table-body"></tbody>
+          </table>
+        </div>
+        <p id="manage-error" class="error-text hidden"></p>
+      </section>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Pick your random classroom group">
+  <title>Pick My Group</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <a href="index.html" class="brand">Random Group Maker</a>
+      <span id="connection-status" class="status-pill">Connecting…</span>
+    </header>
+
+    <section id="student-loading" class="card center-card">
+      <div class="spinner"></div>
+      <p>Loading session…</p>
+    </section>
+
+    <section id="student-app" class="hidden">
+      <div class="session-heading">
+        <p class="eyebrow">GROUPING SESSION</p>
+        <h1 id="session-title">—</h1>
+        <p id="session-meta" class="muted">—</p>
+      </div>
+
+      <section id="pick-card" class="card">
+        <div id="pick-form-view">
+          <h2>Enter your name</h2>
+          <p class="muted">You can pick only once for this session.</p>
+          <form id="pick-form">
+            <label for="student-name">Full name</label>
+            <input id="student-name" name="student-name" maxlength="120" autocomplete="name"
+                   placeholder="e.g. Juan Dela Cruz" required>
+            <button id="pick-button" class="btn btn-primary btn-large" type="submit">
+              Pick My Group
+            </button>
+          </form>
+        </div>
+
+        <div id="result-view" class="result hidden">
+          <p class="eyebrow">🎉 YOU GOT</p>
+          <div id="result-group" class="group-result">GROUP —</div>
+          <p id="result-name" class="muted">—</p>
+          <p class="small muted">Your assignment is saved for this session.</p>
+        </div>
+      </section>
+
+      <section id="full-card" class="card notice hidden">
+        <h2>Session Full</h2>
+        <p>All configured group slots have been assigned.</p>
+      </section>
+
+      <section class="card">
+        <div class="section-title">
+          <div>
+            <h2>Live Group Status</h2>
+            <p id="assigned-total" class="muted">0 / 0 students assigned</p>
+          </div>
+        </div>
+        <div id="group-list" class="group-list"></div>
+      </section>
+
+      <p id="student-error" class="error-text hidden"></p>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/student.js"></script>
+</body>
+</html>
